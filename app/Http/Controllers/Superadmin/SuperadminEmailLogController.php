@@ -68,9 +68,10 @@ class SuperadminEmailLogController extends Controller
 
         $callback = function () use ($logs) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Recipient', 'Subject', 'Template', 'Channel', 'Status', 'Error', 'Sent At']);
-            foreach ($logs as $log) {
+            fputcsv($handle, ['Sl No.', 'Recipient', 'Subject', 'Template', 'Channel', 'Status', 'Error', 'Sent At']);
+            foreach ($logs as $i => $log) {
                 fputcsv($handle, [
+                    $i + 1,
                     $log->recipient,
                     $log->subject,
                     $log->template ?? '',

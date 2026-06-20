@@ -95,9 +95,10 @@ class ReportController extends Controller
 
         $callback = function () use ($transactions) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Date', 'Time', 'Type', 'Category', 'Account', 'Amount', 'Note']);
-            foreach ($transactions as $t) {
+            fputcsv($handle, ['Sl No.', 'Date', 'Time', 'Type', 'Category', 'Account', 'Amount', 'Note']);
+            foreach ($transactions as $i => $t) {
                 fputcsv($handle, [
+                    $i + 1,
                     $t->date?->toDateString() ?? '',
                     $t->time ?? '',
                     $t->type?->value ?? '',

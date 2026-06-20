@@ -13,6 +13,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransactionController extends Controller
 {
@@ -43,11 +44,71 @@ class TransactionController extends Controller
             $query->inMonth($request->month);
         }
 
+        if ($request->filled('q')) {
+            $q = $request->query('q');
+            $query->where(function ($w) use ($q) {
+                $w->where('note', 'like', "%{$q}%")
+                  ->orWhereHas('category', fn ($c) => $c->where('name', 'like', "%{$q}%"))
+                  ->orWhereHas('account', fn ($a) => $a->where('name', 'like', "%{$q}%"));
+            });
+        }
+
         $transactions = $request->filled('per_page')
             ? $query->paginate((int) $request->per_page)
             : $query->get();
 
         return $this->successResponse($transactions);
+    }
+
+    public function exportCsv(Request $request): StreamedResponse
+    {
+        $query = Transaction::forUser($request->user()->id)
+            ->with(['account', 'category'])
+            ->orderBy('date', 'desc');
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('month')) {
+            $query->inMonth($request->month);
+        }
+
+        if ($request->filled('q')) {
+            $q = $request->query('q');
+            $query->where(function ($w) use ($q) {
+                $w->where('note', 'like', "%{$q}%")
+                  ->orWhereHas('category', fn ($c) => $c->where('name', 'like', "%{$q}%"))
+                  ->orWhereHas('account', fn ($a) => $a->where('name', 'like', "%{$q}%"));
+            });
+        }
+
+        $transactions = $query->get();
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="transactions.csv"',
+        ];
+
+        $callback = function () use ($transactions) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Sl No.', 'Date', 'Time', 'Type', 'Category', 'Account', 'Amount', 'Note']);
+            foreach ($transactions as $i => $t) {
+                fputcsv($handle, [
+                    $i + 1,
+                    $t->date?->toDateString() ?? '',
+                    $t->time ?? '',
+                    $t->type?->value ?? '',
+                    $t->category?->name ?? '',
+                    $t->account?->name ?? '',
+                    $t->amount,
+                    $t->note ?? '',
+                ]);
+            }
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function store(StoreTransactionRequest $request): JsonResponse

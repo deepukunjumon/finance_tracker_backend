@@ -72,9 +72,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
     // Transactions
-    Route::get('/transactions',         [TransactionController::class, 'index']);
-    Route::post('/transactions',        [TransactionController::class, 'store']);
-    Route::get('/transactions/{id}',    [TransactionController::class, 'show']);
+    Route::get('/transactions',             [TransactionController::class, 'index']);
+    Route::get('/transactions/export/csv',  [TransactionController::class, 'exportCsv']);
+    Route::post('/transactions',            [TransactionController::class, 'store']);
+    Route::get('/transactions/{id}',        [TransactionController::class, 'show']);
     Route::put('/transactions/{id}',    [TransactionController::class, 'update']);
     Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);
 

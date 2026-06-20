@@ -22,6 +22,7 @@
   <table>
     <thead>
       <tr>
+        <th>Sl No.</th>
         <th>Recipient</th>
         <th>Subject</th>
         <th>Template</th>
@@ -31,8 +32,9 @@
       </tr>
     </thead>
     <tbody>
-      @forelse ($logs as $log)
+      @forelse ($logs as $i => $log)
       <tr>
+        <td>{{ $i + 1 }}</td>
         <td>{{ $log->recipient }}</td>
         <td>{{ $log->subject }}</td>
         <td>{{ $log->template ?? '—' }}</td>
@@ -41,7 +43,7 @@
         <td>{{ $log->sent_at?->format('d M Y, h:i A') ?? '—' }}</td>
       </tr>
       @empty
-      <tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">No logs found.</td></tr>
+      <tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">No logs found.</td></tr>
       @endforelse
     </tbody>
   </table>

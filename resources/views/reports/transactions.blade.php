@@ -45,6 +45,7 @@
     <table>
         <thead>
             <tr>
+                <th>Sl No.</th>
                 <th>Date</th>
                 <th>Type</th>
                 <th>Category</th>
@@ -54,8 +55,9 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($transactions as $t)
+            @forelse ($transactions as $i => $t)
             <tr>
+                <td>{{ $i + 1 }}</td>
                 <td>{{ $t->date->format('d M Y') }}</td>
                 <td class="{{ $t->type?->value }}">{{ ucfirst($t->type?->value) }}</td>
                 <td>{{ $t->category?->name ?? '—' }}</td>
@@ -64,7 +66,7 @@
                 <td style="text-align:right;" class="{{ $t->type?->value }}">{{ number_format($t->amount, 2) }}</td>
             </tr>
             @empty
-            <tr><td colspan="6" style="text-align:center; color:#9ca3af;">No transactions found.</td></tr>
+            <tr><td colspan="7" style="text-align:center; color:#9ca3af;">No transactions found.</td></tr>
             @endforelse
         </tbody>
     </table>
