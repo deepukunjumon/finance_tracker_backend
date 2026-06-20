@@ -19,6 +19,7 @@ use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Superadmin\SuperadminAccountTypeController;
 use App\Http\Controllers\Superadmin\SuperadminAppSettingController;
 use App\Http\Controllers\Superadmin\SuperadminAuditLogController;
+use App\Http\Controllers\Superadmin\SuperadminEmailLogController;
 use App\Http\Controllers\Superadmin\SuperadminCategoryController;
 use App\Http\Controllers\Superadmin\SuperadminCurrencyController;
 use App\Http\Controllers\Superadmin\SuperadminDashboardController;
@@ -130,6 +131,11 @@ Route::middleware(['auth:sanctum', 'superadmin'])->prefix('superadmin')->group(f
     Route::delete('/categories/{id}',[SuperadminCategoryController::class, 'destroy']);
 
     Route::get('/audit-logs',        [SuperadminAuditLogController::class, 'index']);
+
+    Route::get('/logs/email',            [SuperadminEmailLogController::class, 'index']);
+    Route::get('/logs/email/export/csv', [SuperadminEmailLogController::class, 'exportCsv']);
+    Route::get('/logs/email/export/pdf', [SuperadminEmailLogController::class, 'exportPdf']);
+    Route::get('/logs/email/{id}',       [SuperadminEmailLogController::class, 'show']);
 
     Route::get('/app-settings',      [SuperadminAppSettingController::class, 'index']);
     Route::put('/app-settings',      [SuperadminAppSettingController::class, 'update']);

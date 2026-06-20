@@ -49,7 +49,10 @@ class NotificationService
             'userName' => $user->name,
         ]);
 
-        return $this->sendEmail($user->email, 'Welcome to ' . config('app.name'), $html);
+        return $this->sendEmail($user->email, 'Welcome to ' . config('app.name'), $html, [
+            'template' => 'welcome',
+            'metadata' => ['user_id' => $user->id],
+        ]);
     }
 
     public function sendPasswordChanged(User $user): bool
@@ -58,7 +61,10 @@ class NotificationService
             'userName' => $user->name,
         ]);
 
-        return $this->sendEmail($user->email, 'Password Changed', $html);
+        return $this->sendEmail($user->email, 'Password Changed', $html, [
+            'template' => 'password_changed',
+            'metadata' => ['user_id' => $user->id],
+        ]);
     }
 
     public function sendTransactionAlert(User $user, float $amount, string $type, string $accountName): bool
@@ -71,7 +77,10 @@ class NotificationService
             'currency'    => $user->currency ?? 'INR',
         ]);
 
-        return $this->sendEmail($user->email, 'Large Transaction Alert', $html);
+        return $this->sendEmail($user->email, 'Large Transaction Alert', $html, [
+            'template' => 'transaction_alert',
+            'metadata' => ['user_id' => $user->id, 'amount' => $amount, 'type' => $type],
+        ]);
     }
 
     public function sendBudgetExceeded(User $user, string $categoryName, float $budgetAmount, float $spent): bool
@@ -84,7 +93,10 @@ class NotificationService
             'currency'     => $user->currency ?? 'INR',
         ]);
 
-        return $this->sendEmail($user->email, 'Budget Exceeded Alert', $html);
+        return $this->sendEmail($user->email, 'Budget Exceeded Alert', $html, [
+            'template' => 'budget_exceeded',
+            'metadata' => ['user_id' => $user->id, 'category' => $categoryName, 'budget' => $budgetAmount, 'spent' => $spent],
+        ]);
     }
 
     public function sendAccountDeactivated(User $user): bool
@@ -93,7 +105,10 @@ class NotificationService
             'userName' => $user->name,
         ]);
 
-        return $this->sendEmail($user->email, 'Account Deactivated', $html);
+        return $this->sendEmail($user->email, 'Account Deactivated', $html, [
+            'template' => 'account_deactivated',
+            'metadata' => ['user_id' => $user->id],
+        ]);
     }
 
     protected function renderTemplate(string $view, array $data = []): string
