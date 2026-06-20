@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Enums\ApiResponseMessage;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UpdateProfileRequest;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-    public function show(\Illuminate\Http\Request $request): JsonResponse
+    public function show(Request $request): JsonResponse
     {
         return $this->successResponse($this->formatUser($request->user()));
     }
@@ -44,6 +45,15 @@ class ProfileController extends Controller
         $user->update(['password' => Hash::make($request->validated('password'))]);
 
         return $this->successResponse(message: ApiResponseMessage::PasswordUpdateSuccess->value);
+    }
+
+    public function deactivate(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->currentAccessToken()->delete();
+        $user->delete();
+
+        return $this->successResponse(message: 'Account deactivated successfully.');
     }
 
     private function formatUser($user): array
