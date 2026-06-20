@@ -7,7 +7,9 @@ use App\Enums\TransactionType;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
 use App\Models\Account;
+use App\Models\Budget;
 use App\Models\Transaction;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -79,6 +81,8 @@ class TransactionController extends Controller
             ->latest()
             ->first();
 
+        $this->sendTransactionNotifications($request->user(), $data, $account);
+
         return $this->successResponse($transaction, ApiResponseMessage::CreateSuccess->value, 201);
     }
 
@@ -120,5 +124,42 @@ class TransactionController extends Controller
         $transaction->delete();
 
         return $this->successResponse(message: ApiResponseMessage::DeleteSuccess->value);
+    }
+
+    private function sendTransactionNotifications($user, array $data, Account $account): void
+    {
+        $notifier = app(NotificationService::class);
+        $amount   = (float) $data['amount'];
+
+        $threshold = (float) config('notifications.large_transaction_threshold', 10000);
+        if ($amount >= $threshold) {
+            $notifier->sendTransactionAlert($user, $amount, $data['type'], $account->name);
+        }
+
+        if ($data['type'] === 'expense' && ! empty($data['category_id'])) {
+            $month = date('Y-m', strtotime($data['date']));
+            $year  = (int) substr($month, 0, 4);
+            $mon   = (int) substr($month, 5, 2);
+
+            $budgets = Budget::forUser($user->id)
+                ->where('category_id', $data['category_id'])
+                ->where('year', $year)
+                ->where(fn ($q) => $q->whereNull('month')->orWhere('month', $mon))
+                ->get();
+
+            foreach ($budgets as $budget) {
+                $spent = Transaction::forUser($user->id)
+                    ->where('category_id', $data['category_id'])
+                    ->where('type', 'expense')
+                    ->inMonth($month)
+                    ->sum('amount');
+
+                if ((float) $spent > (float) $budget->amount) {
+                    $categoryName = $budget->category?->name ?? 'Unknown';
+                    $budget->loadMissing('category');
+                    $notifier->sendBudgetExceeded($user, $budget->category?->name ?? 'Unknown', (float) $budget->amount, (float) $spent);
+                }
+            }
+        }
     }
 }

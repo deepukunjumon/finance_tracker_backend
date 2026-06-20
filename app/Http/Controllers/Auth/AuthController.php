@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -23,6 +24,8 @@ class AuthController extends Controller
                 'password' => $request->validated('password'),
             ]);
     
+            app(NotificationService::class)->sendWelcome($user);
+
             return $this->successResponse(
                 $this->formatUser($user, $user->createToken('auth_token')->plainTextToken),
                 ApiResponseMessage::RegisterSuccess->value,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ApiResponseMessage;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UpdateProfileRequest;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
@@ -44,12 +45,17 @@ class ProfileController extends Controller
 
         $user->update(['password' => Hash::make($request->validated('password'))]);
 
+        app(NotificationService::class)->sendPasswordChanged($user);
+
         return $this->successResponse(message: ApiResponseMessage::PasswordUpdateSuccess->value);
     }
 
     public function deactivate(Request $request): JsonResponse
     {
         $user = $request->user();
+
+        app(NotificationService::class)->sendAccountDeactivated($user);
+
         $user->currentAccessToken()->delete();
         $user->delete();
 

@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ApiResponseMessage;
-use App\Enums\TransactionType;
 use App\Http\Requests\AdjustBalanceRequest;
 use App\Http\Requests\StoreAccountRequest;
 use App\Http\Requests\UpdateAccountRequest;
 use App\Models\Account;
-use App\Models\Transaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -57,20 +55,6 @@ class AccountController extends Controller
         }
 
         $newBalance = (float) $request->validated('new_balance');
-        $diff       = $newBalance - $account->balance;
-
-        if ($diff == 0) {
-            return $this->successResponse($account, ApiResponseMessage::UpdateSuccess->value);
-        }
-
-        Transaction::create([
-            'user_id'    => $request->user()->id,
-            'account_id' => $account->id,
-            'type'       => TransactionType::Adjustment,
-            'amount'     => abs($diff),
-            'date'       => now()->toDateString(),
-            'note'       => 'Balance adjustment (manual)',
-        ]);
 
         $account->update(['balance' => $newBalance]);
 
