@@ -11,6 +11,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -41,6 +42,10 @@ class AuthController extends Controller
         $user = User::where('email', $request->validated('email'))->first();
 
         if (! $user || ! Hash::check($request->validated('password'), $user->password)) {
+            Log::warning('Failed login attempt.', [
+                'email' => $request->validated('email'),
+                'ip'    => $request->ip(),
+            ]);
             return $this->errorResponse(ApiResponseMessage::InvalidCredentials->value, 401);
         }
 

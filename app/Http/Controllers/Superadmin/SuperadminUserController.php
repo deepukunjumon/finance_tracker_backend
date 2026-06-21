@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Superadmin;
 
 use App\Enums\ApiResponseMessage;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -49,10 +50,21 @@ class SuperadminUserController extends Controller
         if ($user->trashed()) {
             $user->restore();
             $message = 'User activated successfully.';
+            $action  = 'user.activated';
         } else {
             $user->delete();
             $message = 'User deactivated successfully.';
+            $action  = 'user.deactivated';
         }
+
+        AuditLog::create([
+            'user_id'        => $request->user()->id,
+            'action'         => $action,
+            'auditable_type' => User::class,
+            'auditable_id'   => $user->id,
+            'ip_address'     => $request->ip(),
+            'user_agent'     => $request->userAgent(),
+        ]);
 
         return $this->successResponse($user->fresh(), $message);
     }
@@ -68,6 +80,15 @@ class SuperadminUserController extends Controller
         if ($user->id === $request->user()->id) {
             return $this->errorResponse(ApiResponseMessage::CannotDeleteSelf->value, 422);
         }
+
+        AuditLog::create([
+            'user_id'        => $request->user()->id,
+            'action'         => 'user.deleted',
+            'auditable_type' => User::class,
+            'auditable_id'   => $user->id,
+            'ip_address'     => $request->ip(),
+            'user_agent'     => $request->userAgent(),
+        ]);
 
         $user->delete();
 
@@ -92,7 +113,7 @@ class SuperadminUserController extends Controller
         ];
     }
 
-    public function restore(string $id): JsonResponse
+    public function restore(Request $request, string $id): JsonResponse
     {
         $user = User::onlyTrashed()->find($id);
 
@@ -101,6 +122,15 @@ class SuperadminUserController extends Controller
         }
 
         $user->restore();
+
+        AuditLog::create([
+            'user_id'        => $request->user()->id,
+            'action'         => 'user.restored',
+            'auditable_type' => User::class,
+            'auditable_id'   => $user->id,
+            'ip_address'     => $request->ip(),
+            'user_agent'     => $request->userAgent(),
+        ]);
 
         return $this->successResponse(message: ApiResponseMessage::UpdateSuccess->value);
     }

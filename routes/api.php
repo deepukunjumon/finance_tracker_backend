@@ -33,8 +33,8 @@ Route::get('/health', function () {
 Route::get('/settings/public', [PublicSettingsController::class, 'index']);
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login',    [AuthController::class, 'login']);
+    Route::middleware('throttle:5,1')->post('/register', [AuthController::class, 'register']);
+    Route::middleware('throttle:5,1')->post('/login',    [AuthController::class, 'login']);
 
     Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 

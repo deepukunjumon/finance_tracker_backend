@@ -45,6 +45,9 @@ class ProfileController extends Controller
 
         $user->update(['password' => Hash::make($request->validated('password'))]);
 
+        $currentTokenId = $user->currentAccessToken()->id;
+        $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+
         app(NotificationService::class)->sendPasswordChanged($user);
 
         return $this->successResponse(message: ApiResponseMessage::PasswordUpdateSuccess->value);
@@ -66,7 +69,16 @@ class ProfileController extends Controller
     public function updateNotificationPreferences(Request $request): JsonResponse
     {
         $user = $request->user();
-        $user->update(['notification_preferences' => $request->all()]);
+        $validated = $request->validate([
+            'email'              => 'required|boolean',
+            'sms'                => 'required|boolean',
+            'push'               => 'required|boolean',
+            'budget_alerts'      => 'required|boolean',
+            'transaction_alerts' => 'required|boolean',
+            'weekly_summary'     => 'required|boolean',
+            'bill_reminders'     => 'required|boolean',
+        ]);
+        $user->update(['notification_preferences' => $validated]);
 
         return $this->successResponse($user->notification_preferences, 'Notification preferences updated.');
     }

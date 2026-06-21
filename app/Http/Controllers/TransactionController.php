@@ -121,6 +121,13 @@ class TransactionController extends Controller
             return $this->errorResponse(ApiResponseMessage::AccountNotFound->value, 404);
         }
 
+        if (isset($data['transfer_account_id'])) {
+            $transferAccount = Account::forUser($userId)->find($data['transfer_account_id']);
+            if (! $transferAccount) {
+                return $this->errorResponse('Transfer account not found or does not belong to you.', 404);
+            }
+        }
+
         DB::transaction(function () use ($data, $userId, $account) {
             $transaction = Transaction::create(array_merge($data, ['user_id' => $userId]));
 
@@ -131,7 +138,7 @@ class TransactionController extends Controller
                 $account->decrement('balance', $data['amount']);
             } elseif ($type === TransactionType::Transfer && isset($data['transfer_account_id'])) {
                 $account->decrement('balance', $data['amount']);
-                Account::where('id', $data['transfer_account_id'])->increment('balance', $data['amount']);
+                Account::forUser($userId)->where('id', $data['transfer_account_id'])->increment('balance', $data['amount']);
             }
 
             return $transaction;

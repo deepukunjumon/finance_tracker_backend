@@ -58,7 +58,7 @@ class SsoController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $query = http_build_query([
+        $fragment = http_build_query([
             'token'                => $token,
             'id'                   => $user->id,
             'name'                 => $user->name,
@@ -68,6 +68,6 @@ class SsoController extends Controller
             'role'                 => $user->role?->value ?? 'user',
         ]);
 
-        return redirect($frontendUrl . '/auth/sso/callback?' . $query);
+        return redirect($frontendUrl . '/auth/sso/callback#' . $fragment);
     }
 }
