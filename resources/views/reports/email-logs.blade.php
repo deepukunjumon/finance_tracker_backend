@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <title>Email Logs</title>
 <style>
-  body { font-family: sans-serif; font-size: 12px; color: #1e293b; margin: 20px; }
+  @page { margin: 40px; }
+  body { font-family: sans-serif; font-size: 12px; color: #1e293b; margin: 0; padding: 24px; border: 2px solid #d1d5db; }
   h1 { font-size: 18px; margin-bottom: 4px; }
   .meta { color: #64748b; font-size: 11px; margin-bottom: 16px; }
   table { width: 100%; border-collapse: collapse; margin-top: 8px; }

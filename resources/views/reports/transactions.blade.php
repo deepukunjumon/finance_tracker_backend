@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <title>Transaction Report</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1f2937; }
+        @page { margin: 40px; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1f2937; border: 2px solid #d1d5db; padding: 24px; }
         h1   { font-size: 20px; color: #111827; margin-bottom: 4px; }
         .sub { font-size: 11px; color: #6b7280; margin-bottom: 24px; }
         table { width: 100%; border-collapse: collapse; margin-top: 16px; }
