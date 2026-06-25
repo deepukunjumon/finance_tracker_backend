@@ -16,7 +16,7 @@ class DashboardController extends Controller
 
         $sections = $request->filled('sections')
             ? array_map('trim', explode(',', $request->query('sections')))
-            : ['accounts', 'recent_transactions', 'monthly_trend', 'expense_by_category', 'all_by_category'];
+            : ['accounts', 'recent_transactions', 'monthly_trend', 'income_by_category', 'expense_by_category'];
 
         $accounts     = Account::forUser($userId)->where('is_archived', false)->get();
         $totalBalance = $accounts->sum('balance');
@@ -73,15 +73,16 @@ class DashboardController extends Controller
                 ->get();
         }
 
-        if (in_array('all_by_category', $sections)) {
-            $data['all_by_category'] = Transaction::forUser($userId)
+        if (in_array('income_by_category', $sections)) {
+            $data['income_by_category'] = Transaction::forUser($userId)
                 ->with('category')
-                ->selectRaw('category_id, type, SUM(amount) as total')
+                ->selectRaw('category_id, SUM(amount) as total')
+                ->where('type', 'income')
                 ->inMonth($month)
                 ->whereNotNull('category_id')
-                ->whereIn('type', ['income', 'expense'])
-                ->groupBy('category_id', 'type')
+                ->groupBy('category_id')
                 ->orderByDesc('total')
+                ->limit(5)
                 ->get();
         }
 
