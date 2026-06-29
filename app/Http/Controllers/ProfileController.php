@@ -85,6 +85,34 @@ class ProfileController extends Controller
         return $this->successResponse($user->notification_preferences, 'Notification preferences updated.');
     }
 
+    public function getPreferences(Request $request): JsonResponse
+    {
+        $defaults = [
+            'date_format'        => 'd MMM yyyy',
+            'default_account_id' => '',
+            'week_start'         => 'sunday',
+        ];
+
+        return $this->successResponse(
+            array_merge($defaults, $request->user()->preferences ?? [])
+        );
+    }
+
+    public function updatePreferences(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $validated = $request->validate([
+            'date_format'        => 'sometimes|string|in:d MMM yyyy,dd/MM/yyyy,MM/dd/yyyy,yyyy-MM-dd',
+            'default_account_id' => 'sometimes|string',
+            'week_start'         => 'sometimes|string|in:sunday,monday',
+        ]);
+
+        $current = $user->preferences ?? [];
+        $user->update(['preferences' => array_merge($current, $validated)]);
+
+        return $this->successResponse($user->preferences, 'Preferences updated.');
+    }
+
     public function deactivate(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -108,6 +136,9 @@ class ProfileController extends Controller
             'role'                 => $user->role?->value ?? 'user',
             'profile_picture'      => $this->fileUrl($user->profile_picture),
             'onboarding_completed' => (bool) $user->onboarding_completed,
+            'preferences'          => $user->preferences ?? [
+                'date_format' => 'd MMM yyyy', 'default_account_id' => '', 'week_start' => 'sunday',
+            ],
         ];
     }
 

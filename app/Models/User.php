@@ -30,6 +30,7 @@ class User extends Authenticatable
         'currency',
         'onboarding_completed',
         'notification_preferences',
+        'preferences',
     ];
 
     /**
@@ -52,6 +53,7 @@ class User extends Authenticatable
             'role'                 => UserRole::class,
             'onboarding_completed'      => 'boolean',
             'notification_preferences'  => 'array',
+            'preferences'               => 'array',
         ];
     }
 
