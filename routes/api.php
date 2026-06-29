@@ -65,6 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/accounts/{id}',              [AccountController::class, 'update']);
     Route::patch('/accounts/{id}/archive',         [AccountController::class, 'archive']);
     Route::post('/accounts/{id}/adjust-balance',   [AccountController::class, 'adjustBalance']);
+    Route::patch('/accounts/{id}/set-default',    [AccountController::class, 'setDefault']);
     Route::delete('/accounts/{id}',           [AccountController::class, 'destroy']);
 
     // Categories

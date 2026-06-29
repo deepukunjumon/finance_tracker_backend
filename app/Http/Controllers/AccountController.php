@@ -138,4 +138,21 @@ class AccountController extends Controller
 
         return $this->successResponse(message: ApiResponseMessage::DeleteSuccess->value);
     }
+
+    public function setDefault(Request $request, string $id): JsonResponse
+    {
+        $userId  = $request->user()->id;
+        $account = Account::forUser($userId)->find($id);
+
+        if (! $account) {
+            return $this->errorResponse(ApiResponseMessage::AccountNotFound->value, 404);
+        }
+
+        DB::transaction(function () use ($userId, $account) {
+            Account::forUser($userId)->where('is_primary', true)->update(['is_primary' => false]);
+            $account->update(['is_primary' => true]);
+        });
+
+        return $this->successResponse($account->fresh(), 'Default account updated.');
+    }
 }
